@@ -1,0 +1,62 @@
+# 🌐 Networking Fundamentals
+
+## Overview
+
+Networking knowledge helps me understand how devices communicate, how services are exposed, and how network traffic moves between systems.
+
+## Topics Studied
+
+- IPv4 and IPv6 addressing
+- Private and public IP addresses
+- Subnet masks and subnetting
+- MAC addresses
+- TCP and UDP
+- Ports and network services
+- DNS resolution
+- Default gateways and routing
+- HTTP and HTTPS
+- SMTP and email communication
+- VPNs and tunneling
+
+## Useful Commands
+
+```bash
+ip addr
+ip route
+ip neigh
+```
+
+DNS examples:
+
+```bash
+nslookup example.com
+dig example.com A
+dig example.com MX
+dig example.com NS
+```
+
+## Important Concepts
+
+**IP address:** Identifies a network interface at the IP layer.
+
+**MAC address:** A link-layer address used for communication on a local network.
+
+**Port:** Identifies a transport-layer endpoint associated with a service or application.
+
+**DNS:** Provides records used to locate services and associate names with network information.
+
+**Routing:** Determines how packets are forwarded toward their destination.
+
+## What I Learned
+
+An open port does not automatically indicate a vulnerability. Understanding the service, its configuration, its exposure, and its security controls is necessary before drawing conclusions.
+
+I also learned that DNS records provide different types of information, including mail servers and authoritative nameservers.
+
+## Practical Exercise Record
+
+- **Objective:** [Add]
+- **Commands used:** [Add]
+- **Output:** [Add]
+- **Interpretation:** [Explain what you learned]
+- **Security relevance:** [Add]
