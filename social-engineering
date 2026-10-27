@@ -1,0 +1,55 @@
+# 🎭 Social Engineering & Human-Factor Security
+
+## Overview
+
+Social engineering involves manipulating trust, urgency, authority, curiosity, or confusion to influence people's decisions.
+
+I study this area to understand phishing threats, recognize warning signs, and learn how organizations can improve security awareness.
+
+## Concepts Studied
+
+- Phishing and spear phishing
+- Pretexting and impersonation
+- Baiting
+- Malicious links and attachments
+- Credential-harvesting risks
+- Security-awareness training
+- Reporting suspected phishing
+
+## Social-Engineer Toolkit (SET)
+
+Project: https://github.com/trustedsec/social-engineer-toolkit
+
+SET is a security-testing framework that supports social-engineering assessment workflows.
+
+It can be used in authorized training scenarios to demonstrate human-factor security risks.
+
+## What I Learned
+
+- Social engineering targets human decision-making as well as technical systems.
+- Urgent requests and unexpected credential requests are common warning signs.
+- Unexpected requests should be verified through a separate trusted channel.
+- Multi-factor authentication can reduce the impact of stolen passwords but does not eliminate every phishing risk.
+- Organizations need clear procedures for reporting suspicious messages.
+
+## Defensive Assessment Workflow
+
+1. Obtain authorization and define the assessment scope.
+2. Establish the training objective.
+3. Use approved simulation methods.
+4. Avoid collecting real passwords or unnecessary personal information.
+5. Explain the warning signs and lessons.
+6. Recommend improvements to technical controls and awareness training.
+
+## Practical Exercise Record
+
+- **Objective:** [Add]
+- **Authorized scope:** [Add]
+- **Tool or concept explored:** [Add]
+- **Observed result:** [Add]
+- **Lessons learned:** [Add]
+- **Defensive recommendations:** [Add]
+
+## Responsible Practice
+
+This documentation focuses on authorized assessments, awareness, and defense—not unauthorized deception or credential collection.
