@@ -1,0 +1,53 @@
+# 🦈 Packet Analysis with Wireshark & TShark
+
+## Overview
+
+Packet analysis helps me understand network communication by examining protocol fields, packet sequences, and traffic patterns.
+
+## Useful Display Filters
+
+| Filter | Purpose |
+|---|---|
+| `eapol` | Displays EAPOL packets |
+| `dns` | Displays DNS traffic |
+| `tcp` | Displays TCP packets |
+| `udp` | Displays UDP packets |
+| `icmp` | Displays ICMP traffic |
+| `http` | Displays HTTP packets when present |
+| `ip.addr == 192.0.2.10` | Displays IP packets involving this example address |
+
+The address `192.0.2.10` is reserved for documentation examples.
+
+## TShark Examples
+
+Read a capture:
+
+```bash
+tshark -r capture.pcap
+```
+
+Display DNS packets:
+
+```bash
+tshark -r capture.pcap -Y dns
+```
+
+The `-r` option reads a capture file, while `-Y` applies a display filter.
+
+## What I Learned
+
+- Capture filters and display filters serve different purposes.
+- Packet fields help explain network behavior.
+- Encrypted traffic limits the application data visible in captures.
+- Missing packets can make an investigation incomplete.
+- Packet evidence must be interpreted in context.
+
+## Analysis Record
+
+- **Question:** [What were you investigating?]
+- **Capture source:** [Authorized lab]
+- **Filter used:** [Add]
+- **Observed packets:** [Add]
+- **Interpretation:** [Explain]
+- **Limitations:** [Add]
+- **Security relevance:** [Add]
