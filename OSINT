@@ -1,0 +1,112 @@
+# 🌍 Open-Source Intelligence (OSINT)
+
+## Overview
+
+OSINT is the process of collecting, evaluating, and analyzing publicly available information.
+
+I study OSINT to understand how publicly accessible information can reveal domain infrastructure, exposed services, technology choices, and relationships between digital assets.
+
+## 1. WHOIS
+
+**Purpose:** Retrieve available domain registration information.
+
+Example:
+
+```bash
+whois example.com
+```
+
+Depending on registry policies and privacy settings, results may include registration dates, registrar information, and nameservers.
+
+**What I learned:** Registration data can provide investigative context, but it does not necessarily prove who owns or operates a website.
+
+## 2. Shodan
+
+**Purpose:** Search indexed information about internet-connected devices and services.
+
+Website: https://www.shodan.io/
+
+Shodan can help security researchers study exposed service banners, internet-facing systems, and publicly visible technologies.
+
+**What I learned:** A search result is an observation, not proof that a device is currently reachable or vulnerable.
+
+## 3. DNS Reconnaissance
+
+Useful commands:
+
+```bash
+dig example.com A
+dig example.com MX
+dig example.com NS
+```
+
+- **A:** IPv4 address record
+- **AAAA:** IPv6 address record
+- **MX:** Mail exchanger
+- **NS:** Nameserver
+- **TXT:** Text data, including some email-security policies
+- **CNAME:** Canonical-name alias
+
+DNS information can help explain how a domain's services are configured.
+
+## 4. Search Operators
+
+Examples:
+
+```text
+site:example.com
+site:example.com filetype:pdf
+"exact phrase"
+```
+
+These operators help narrow searches to particular domains, file types, or phrases.
+
+**Security lesson:** Publicly indexed documents should be reviewed to ensure they do not expose confidential information.
+
+## 5. theHarvester
+
+Project: https://github.com/laramies/theHarvester
+
+TheHarvester gathers publicly discoverable information associated with a domain from supported sources.
+
+Example command pattern:
+
+```bash
+theHarvester -d example.com -b crtsh
+```
+
+Source availability and supported options may vary by version.
+
+**What I learned:** Automated collection can save time, but results may be incomplete, outdated, or incorrectly associated with a target.
+
+## 6. Maltego
+
+Website: https://www.maltego.com/
+
+Maltego supports visual link analysis across entities such as domains, IP addresses, organizations, and other data points.
+
+**What I learned:** Visual relationships help organize investigations, but a displayed connection is not automatic proof of ownership or wrongdoing.
+
+## OSINT Workflow
+
+1. Define the objective and authorized scope.
+2. Identify known domains and public identifiers.
+3. Collect registration and DNS information.
+4. Review relevant public sources.
+5. Correlate and verify findings.
+6. Document sources, timestamps, and limitations.
+7. Recommend appropriate security improvements.
+
+## Practical Exercise Record
+
+- **Objective:** [Add]
+- **Authorized scope:** [Add]
+- **Tools used:** [Add]
+- **Findings:** [Add]
+- **Verification:** [Explain how you checked]
+- **Limitations:** [Add]
+- **Security recommendations:** [Add]
+
+## Key Lesson
+
+OSINT is not just gathering information. It requires evaluating sources, checking accuracy, understanding context, and protecting personal information.
