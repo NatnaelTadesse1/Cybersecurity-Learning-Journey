@@ -1,0 +1,54 @@
+# 🐧 Linux & Parrot Security OS
+
+## Overview
+
+Linux is an important part of my cybersecurity learning environment. I use command-line utilities to navigate the filesystem, inspect files, investigate network configuration, and troubleshoot system issues.
+
+## Commands and What They Do
+
+| Command | Purpose |
+|---|---|
+| `pwd` | Display the current directory |
+| `ls -la` | List files, including hidden files |
+| `cd` | Navigate between directories |
+| `cat file.txt` | Display a text file |
+| `grep` | Search text for matching patterns |
+| `find` | Search for files and directories |
+| `chmod` | Change file permissions |
+| `tar` | Create or extract archives |
+| `ip addr` | Inspect interfaces and IP addresses |
+| `ip route` | Display routing information |
+| `ip neigh` | View the local network neighbor table |
+| `wget` | Download files from URLs |
+
+## Example Workflow
+
+```bash
+pwd
+ls -la
+ip addr
+ip route
+```
+
+This sequence helps me inspect my working directory, review files, identify network interfaces, and understand routing configuration.
+
+## What I Learned
+
+- Linux uses permissions to control access to files and directories.
+- Hidden files may contain important configuration information.
+- The terminal is useful for system administration and troubleshooting.
+- Network commands help identify addressing and routing issues.
+- Administrative privileges should be used carefully.
+
+## Practical Exercise Record
+
+- **Environment:** Parrot Security OS
+- **Objective:** [Describe your exercise]
+- **Commands used:** [Add your actual commands]
+- **Observed output:** [Describe what appeared]
+- **Explanation:** [Explain what the output means]
+- **Lesson learned:** [Add your conclusion]
+
+## Security Note
+
+Before publishing screenshots, remove passwords, tokens, private keys, and sensitive system information.
