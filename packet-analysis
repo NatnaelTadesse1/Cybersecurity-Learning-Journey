@@ -1,53 +1,1051 @@
-# 🦈 Packet Analysis with Wireshark & TShark
+Advanced Wireshark & TShark Guide
 
-## Overview
+A practical reference for advanced packet analysis, TCP stream reconstruction, protocol inspection, traffic filtering, network troubleshooting, and cybersecurity investigations on Linux and Parrot OS.
 
-Packet analysis helps me understand network communication by examining protocol fields, packet sequences, and traffic patterns.
+«Authorized use only: Capture and analyze traffic from your own devices, networks, or approved lab environments. Packet captures can contain sensitive information, including credentials, session cookies, and private communications.»
 
-## Useful Display Filters
+Table of Contents
 
-| Filter | Purpose |
-|---|---|
-| `eapol` | Displays EAPOL packets |
-| `dns` | Displays DNS traffic |
-| `tcp` | Displays TCP packets |
-| `udp` | Displays UDP packets |
-| `icmp` | Displays ICMP traffic |
-| `http` | Displays HTTP packets when present |
-| `ip.addr == 192.0.2.10` | Displays IP packets involving this example address |
+1. "Wireshark Basics" 
+2. "Advanced Display Filters" 
+3. "Following TCP, HTTP, and TLS Streams" 
+4. "Analyzing TCP Connections" 
+5. "DNS Investigation" 
+6. "HTTP and Web Traffic Analysis" 
+7. "TLS and HTTPS Analysis" 
+8. "Statistics and Traffic Analysis"
+9. "Exporting Objects and Data" 
+10. "Capture Filters vs. Display Filters"
+11. "TShark: Advanced Command-Line Analysis" 
+12. "Investigating Suspicious Traffic"
+13. "Advanced Wireshark Settings" 
+14. "Troubleshooting" 
+15. Practical Investigation Workflow
+16. "Useful References" 
 
-The address `192.0.2.10` is reserved for documentation examples.
+---
 
-## TShark Examples
+1. Wireshark Basics
 
-Read a capture:
+Start Wireshark
 
-```bash
-tshark -r capture.pcap
-```
+wireshark
 
-Display DNS packets:
+List available capture interfaces:
 
-```bash
-tshark -r capture.pcap -Y dns
-```
+tshark -D
 
-The `-r` option reads a capture file, while `-Y` applies a display filter.
+Capture packets on a specific interface:
 
-## What I Learned
+sudo tshark -i eth0
 
-- Capture filters and display filters serve different purposes.
-- Packet fields help explain network behavior.
-- Encrypted traffic limits the application data visible in captures.
-- Missing packets can make an investigation incomplete.
-- Packet evidence must be interpreted in context.
+Save packets to a capture file:
 
-## Analysis Record
+sudo tshark -i eth0 -w network-capture.pcapng
 
-- **Question:** [What were you investigating?]
-- **Capture source:** [Authorized lab]
-- **Filter used:** [Add]
-- **Observed packets:** [Add]
-- **Interpretation:** [Explain]
-- **Limitations:** [Add]
-- **Security relevance:** [Add]
+Read a saved capture:
+
+wireshark network-capture.pcapng
+
+Read it from the terminal:
+
+tshark -r network-capture.pcapng
+
+Replace "eth0" with your actual interface, which you can find using:
+
+ip -br addr
+
+Essential Wireshark interface features
+
+Feature| Purpose
+Display Filter bar| Filter captured packets
+Packet List| View packets and their summary information
+Packet Details| Expand protocol fields for a selected packet
+Packet Bytes| Inspect raw packet bytes in hexadecimal and ASCII
+Follow Stream| Reconstruct a conversation between endpoints
+Expert Information| Review protocol warnings and unusual conditions
+Conversations| Summarize communication between endpoints
+Endpoints| List hosts and other endpoints seen in the capture
+I/O Graphs| Visualize traffic volume and patterns
+
+---
+
+2. Advanced Display Filters
+
+Display filters select which packets appear in the packet list. They do not remove packets from the original capture.
+
+2.1 Host and IP filters
+
+Display traffic involving a specific host:
+
+ip.addr == 192.168.1.10
+
+Show packets where a host is the source:
+
+ip.src == 192.168.1.10
+
+Show packets where a host is the destination:
+
+ip.dst == 192.168.1.10
+
+Show traffic between two hosts:
+
+ip.addr == 192.168.1.10 && ip.addr == 192.168.1.20
+
+Exclude a host:
+
+!ip.addr == 192.168.1.10
+
+Filter IPv6 traffic:
+
+ipv6
+
+2.2 TCP filters
+
+Show TCP packets:
+
+tcp
+
+Show TCP traffic on port 443:
+
+tcp.port == 443
+
+Show TCP SYN packets:
+
+tcp.flags.syn == 1
+
+Show initial SYN packets without ACK:
+
+tcp.flags.syn == 1 && tcp.flags.ack == 0
+
+Show TCP reset packets:
+
+tcp.flags.reset == 1
+
+Show retransmissions:
+
+tcp.analysis.retransmission
+
+Show fast retransmissions:
+
+tcp.analysis.fast_retransmission
+
+Show duplicate acknowledgments:
+
+tcp.analysis.duplicate_ack
+
+Show zero-window announcements:
+
+tcp.analysis.zero_window
+
+Show TCP packets with analysis flags:
+
+tcp.analysis.flags
+
+2.3 UDP and ICMP filters
+
+Show UDP packets:
+
+udp
+
+Show UDP traffic on port 53:
+
+udp.port == 53
+
+Show ICMP packets:
+
+icmp
+
+Show ICMP echo requests:
+
+icmp.type == 8
+
+Show ICMP echo replies:
+
+icmp.type == 0
+
+2.4 DNS filters
+
+Show all DNS packets:
+
+dns
+
+Show DNS queries:
+
+dns.flags.response == 0
+
+Show DNS responses:
+
+dns.flags.response == 1
+
+Show DNS errors:
+
+dns.flags.rcode != 0
+
+Show queries for a particular domain:
+dns.qry.name == "example.com"
+
+Show DNS traffic using TCP:
+
+tcp.port == 53
+
+DNS can also use encrypted transports, such as DNS over HTTPS, which ordinary DNS filters will not necessarily decode as DNS messages.
+
+2.5 HTTP filters
+
+Show HTTP traffic:
+
+http
+
+Show HTTP requests:
+
+http.request
+
+Show POST requests:
+
+http.request.method == "POST"
+
+Show GET requests:
+
+http.request.method == "GET"
+
+Show HTTP responses:
+
+http.response
+
+Show HTTP error responses:
+
+http.response.code >= 400
+
+Show a specific HTTP host:
+
+http.host == "example.com"
+
+Show a specific URI:
+
+http.request.uri contains "/login"
+
+These HTTP fields generally apply to traffic Wireshark can dissect as HTTP. HTTPS application content is encrypted unless suitable decryption is configured.
+
+2.6 TLS filters
+
+Show TLS traffic:
+
+tls
+
+Show TLS ClientHello messages:
+
+tls.handshake.type == 1
+
+Show TLS ServerHello messages:
+
+tls.handshake.type == 2
+
+Show TLS certificate messages when present:
+
+tls.handshake.type == 11
+
+Show TLS alerts:
+
+tls.alert_message
+
+Show TLS records on TCP port 443:
+
+tcp.port == 443 && tls
+
+TLS 1.3 encrypts much of the handshake after ServerHello. Certificate visibility and other details depend on the protocol version, capture point, and whether decryption is available.
+
+2.7 Frame and size filters
+
+Show frames larger than 1,400 bytes:
+
+frame.len > 1400
+
+Show frames smaller than 100 bytes:
+
+frame.len < 100
+
+Show packets containing a particular byte sequence in packet data:
+
+frame contains "password"
+
+Use byte-string searches carefully. A match does not prove that a credential was transmitted; it may be unrelated text or data.
+
+2.8 Combining filters
+
+Show DNS queries from one host:
+
+ip.src == 192.168.1.10 && dns.flags.response == 0
+
+Show HTTP requests and DNS traffic:
+
+http.request || dns
+
+Show TCP retransmissions involving a host:
+
+ip.addr == 192.168.1.10 && tcp.analysis.retransmission
+
+Show HTTP errors excluding a specific host:
+
+http.response.code >= 400 && !ip.addr == 192.168.1.20
+
+Tip: Use "&&" for AND, "||" for OR, and "!" for NOT. Parentheses can make complicated expressions easier to understand.
+
+---
+
+3. Following TCP, HTTP, and TLS Streams
+
+Following streams is one of Wireshark's most useful investigation features. It reconstructs the application data exchanged within a conversation when the capture contains the necessary packets.
+
+3.1 Follow a TCP stream
+
+1. Open a capture file.
+2. Select a TCP packet belonging to the conversation.
+3. Right-click the packet.
+4. Select Follow → TCP Stream.
+5. Inspect the reconstructed conversation.
+6. Use the stream selector to identify the conversation.
+7. Change the display format if needed.
+8. Close the stream window to return to the packet list.
+
+Wireshark applies a filter for the selected stream. The exact menu labels can vary by version.
+
+3.2 Follow an HTTP stream
+
+1. Find a packet matching "http".
+2. Select a request or response.
+3. Right-click and choose Follow → HTTP Stream, if available.
+4. Inspect request headers, response headers, and any unencrypted body data present.
+5. Note the request method, host, URI, status code, and relevant response content.
+
+Useful filter before investigating:
+
+http.request || http.response
+
+Important: Plain HTTP is not encrypted. If credentials or session tokens are sent over HTTP, they may be visible in the capture. Use synthetic data in labs and avoid exposing real secrets in reports.
+
+3.3 Follow a TLS stream
+
+Select a TLS packet and use Follow → TLS Stream if the option is available.
+
+This can help isolate the relevant TLS conversation, but it does not automatically decrypt HTTPS.
+
+Without decryption, you may still be able to inspect metadata such as:
+
+- Source and destination addresses
+- Ports
+- TLS handshake information that is visible
+- Record sizes and timing
+- Some server-name information, when exposed
+- Connection setup and teardown
+
+3.4 Find the stream number
+
+For TCP conversations, the "tcp.stream" field identifies a stream within a particular capture.
+
+Example:
+
+tcp.stream == 0
+
+Display another stream:
+
+tcp.stream == 5
+These numbers are assigned within a capture and are not universal identifiers.
+
+To identify the stream number, select a TCP packet and expand Transmission Control Protocol in Packet Details. Look for the stream index, or right-click the field and choose Apply as Filter.
+
+3.5 Follow a UDP conversation
+
+For UDP-based protocols, Wireshark may provide Follow → UDP Stream.
+
+UDP does not establish a TCP-style connection. A reconstructed UDP stream is a grouping of related datagrams rather than a reliable byte stream.
+
+3.6 What to look for in a stream
+
+- Which endpoint initiated the conversation?
+- Which request or protocol message came first?
+- What did the server return?
+- Were there errors, redirects, or unexpected responses?
+- Was sensitive information sent without encryption?
+- Did the connection end normally or reset unexpectedly?
+- Is the capture incomplete or missing part of the conversation?
+
+---
+
+4. Analyzing TCP Connections
+
+TCP analysis helps troubleshoot connection failures, retransmissions, delays, and unusual communication patterns.
+
+4.1 Understand the TCP handshake
+
+A typical TCP connection begins with:
+
+1. Client sends SYN.
+2. Server responds with SYN-ACK.
+3. Client sends ACK.
+
+Filter for initial SYN packets:
+
+tcp.flags.syn == 1 && tcp.flags.ack == 0
+
+Filter for SYN-ACK packets:
+
+tcp.flags.syn == 1 && tcp.flags.ack == 1
+
+Filter for TCP resets:
+
+tcp.flags.reset == 1
+
+A SYN packet alone does not prove a port scan. It could be ordinary connection establishment, a retry, or another network behavior.
+
+4.2 Detect retransmissions
+
+tcp.analysis.retransmission
+
+Retransmissions may indicate packet loss, congestion, capture artifacts, or other network conditions. Correlate them with acknowledgments, timing, and the capture location.
+
+4.3 Analyze sequence and acknowledgment numbers
+
+1. Select a TCP packet.
+2. Expand Transmission Control Protocol.
+3. Inspect sequence number, acknowledgment number, flags, window size, and payload length.
+4. Compare subsequent packets in the same stream.
+
+Wireshark may use relative sequence numbers for readability. These are often easier to interpret than raw sequence numbers.
+
+4.4 Use TCP stream graphs
+
+Select a TCP packet and open the Statistics → TCP Stream Graphs menu, where available.
+
+Common graphs include:
+
+- Time-Sequence (Stevens): Visualizes sequence numbers over time.
+- Throughput: Shows data transfer rate over time.
+- Round Trip Time: Helps inspect acknowledgment timing.
+- Window Scaling: Helps investigate advertised receive-window behavior.
+
+Menu names and available graphs may differ across versions.
+
+---
+
+5. DNS Investigation
+
+DNS analysis can help explain failed connections, unexpected destinations, and suspicious domain lookups.
+
+5.1 Find DNS queries and responses
+
+Queries:
+
+dns.flags.response == 0
+
+Responses:
+
+dns.flags.response == 1
+
+Errors:
+
+dns.flags.rcode != 0
+
+5.2 Inspect a DNS packet
+
+Select a DNS packet and expand:
+
+- Domain Name System
+- Queries
+- Answers
+- Authority records
+- Additional records, when present
+
+Record the queried name, query type, response code, returned address, and timing.
+
+5.3 Investigate unusual DNS behavior
+
+Look for:
+
+- Repeated failed queries
+- Unexpected domains
+- High volumes of unique queries
+- Unusual query types for the environment
+- Long or irregular subdomain labels
+- Large differences between query and response patterns
+
+These are investigation leads, not proof of malicious activity. Legitimate applications can produce similar behavior.
+
+---
+
+6. HTTP and Web Traffic Analysis
+
+6.1 Inspect HTTP requests
+
+Use:
+
+http.request
+
+Expand Hypertext Transfer Protocol to inspect:
+
+- Request method
+- Host header
+- Request URI
+- User-Agent
+- Content-Type
+- Content-Length
+- Cookies, if present in unencrypted traffic
+
+6.2 Inspect HTTP responses
+
+Use:
+
+http.response
+
+Inspect:
+
+- Status code
+- Server header, if present
+- Content-Type
+- Content-Length
+- Redirect headers
+- Response body, when available
+
+6.3 Find POST requests
+
+http.request.method == "POST"
+POST requests are not inherently malicious. Inspect their context, destination, headers, and content when it is appropriate to do so.
+
+6.4 Export HTTP objects
+
+When a supported HTTP object is present in the capture:
+
+1. Open File → Export Objects → HTTP.
+2. Review the listed objects.
+3. Select an object.
+4. Export it to a controlled analysis directory.
+5. Inspect the file safely before opening or executing it.
+
+Not every capture contains exportable objects. Encrypted HTTPS payloads cannot normally be exported as readable HTTP objects without successful decryption.
+
+---
+
+7. TLS and HTTPS Analysis
+
+7.1 Inspect the TLS handshake
+
+Use:
+
+tls.handshake
+
+For ClientHello messages:
+
+tls.handshake.type == 1
+
+For ServerHello messages:
+
+tls.handshake.type == 2
+
+Inspect available fields for supported versions, cipher suites, extensions, and exposed server-name information.
+
+7.2 Understand HTTPS limitations
+
+HTTPS encrypts application data. A packet capture alone generally cannot reveal the full HTTP request or response body.
+
+For authorized troubleshooting, Wireshark can use a TLS key log file when the client application supports generating one and the session keys are available.
+
+Typical workflow:
+
+1. Configure the test browser or application to generate a TLS key log file.
+2. In Wireshark, open Edit → Preferences → Protocols → TLS.
+3. Locate the (Pre)-Master-Secret log filename field, or its equivalent in your version.
+4. Select the key log file.
+5. Reopen or reload the capture.
+6. Check whether the relevant application traffic can now be dissected.
+
+A key log file contains sensitive session secrets. Keep it private, do not commit it to GitHub, and delete it when no longer needed.
+
+7.3 Inspect certificate information
+
+When certificates are visible in the capture, examine:
+
+- Subject and issuer
+- Validity dates
+- Subject Alternative Names
+- Certificate chain information
+- Negotiated TLS parameters
+
+A certificate message may not be visible in every TLS session, particularly with newer TLS versions or resumed sessions.
+
+---
+
+8. Statistics and Traffic Analysis
+
+Wireshark's Statistics menu is valuable for moving from individual packets to a broader view of network behavior.
+
+8.1 Protocol Hierarchy
+
+Open:
+
+Statistics → Protocol Hierarchy
+
+Use it to determine which protocols account for the captured traffic. This is useful for identifying unexpected protocol use or understanding what a capture contains.
+
+8.2 Conversations
+
+Open:
+
+Statistics → Conversations
+
+Review Ethernet, IPv4, IPv6, TCP, and UDP conversations as appropriate.
+
+Look for:
+
+- Frequent communication between particular endpoints
+- Large byte counts
+- Unusual external destinations
+- Unexpected ports
+- Differences between sent and received traffic
+
+8.3 Endpoints
+
+Open:
+
+Statistics → Endpoints
+
+This summarizes observed endpoints. It is useful for creating a list of hosts present in the capture, but it does not necessarily enumerate every host on the network.
+
+8.4 I/O Graphs
+
+Open:
+
+Statistics → I/O Graphs
+
+Use graphs to visualize packet counts or bytes over time. Add separate graph filters to compare traffic categories, such as DNS and TCP retransmissions.
+
+8.5 Expert Information
+
+Open:
+
+Analyze → Expert Information, or the equivalent menu entry in your version.
+
+Investigate warnings and notes such as retransmissions, malformed packets, or protocol anomalies. Expert Information is a diagnostic aid, not a definitive security verdict.
+
+---
+
+9. Exporting Objects and Data
+
+9.1 Export HTTP objects
+
+Use:
+
+File → Export Objects → HTTP
+
+Export only the objects needed for the investigation and keep them in a controlled directory.
+
+9.2 Export selected packets
+
+1. Apply a display filter.
+2. Select the desired packets.
+3. Open File → Export Specified Packets.
+4. Choose the required packet range and output format.
+
+Review the dialog options carefully; saving selected packets is different from exporting reassembled application objects.
+
+9.3 Save filtered packets using TShark
+
+tshark -r network-capture.pcapng -Y "dns" -w dns-only.pcapng
+Save only packets matching a TCP retransmission filter:
+
+tshark -r network-capture.pcapng -Y "tcp.analysis.retransmission" -w retransmissions.pcapng
+
+These commands create new capture files containing the packets that match the display filter.
+
+9.4 Extract fields into a report
+
+tshark -r network-capture.pcapng -T fields \
+  -e frame.number \
+  -e frame.time \
+  -e ip.src \
+  -e ip.dst \
+  -e _ws.col.Protocol
+
+The output is tab-separated by default and can be redirected into a text file:
+
+tshark -r network-capture.pcapng -T fields \
+  -e frame.number -e ip.src -e ip.dst -e _ws.col.Protocol \
+  > packet-summary.tsv
+
+---
+
+10. Capture Filters vs. Display Filters
+
+These two filter types serve different purposes.
+
+Capture filters
+
+Capture filters limit which packets are collected. They use the capture-filter syntax supported by libpcap.
+
+Examples:
+
+Capture traffic involving a host:
+
+host 192.168.1.10
+
+Capture traffic on TCP port 443:
+
+tcp port 443
+
+Capture DNS traffic:
+
+port 53
+
+Capture traffic between two hosts:
+
+host 192.168.1.10 and host 192.168.1.20
+
+Capture TCP traffic but exclude port 22:
+
+tcp and not port 22
+
+Display filters
+
+Display filters operate on packets already captured and use Wireshark's own filter syntax.
+
+Examples:
+
+ip.addr == 192.168.1.10
+
+tcp.port == 443
+
+dns
+
+tcp.analysis.retransmission
+
+Key difference: Capture filters can permanently omit packets from a capture. Display filters merely hide nonmatching packets from the current view.
+
+---
+
+11. TShark: Advanced Command-Line Analysis
+
+TShark is Wireshark's command-line analyzer. It is useful for repeatable investigations, automation, and processing large capture files.
+
+11.1 Read a capture
+
+tshark -r network-capture.pcapng
+
+Show only DNS packets:
+
+tshark -r network-capture.pcapng -Y "dns"
+
+Show TCP retransmissions:
+
+tshark -r network-capture.pcapng -Y "tcp.analysis.retransmission"
+
+11.2 Extract DNS fields
+
+tshark -r network-capture.pcapng -Y "dns.flags.response == 0" \
+  -T fields \
+  -e frame.time \
+  -e ip.src \
+  -e dns.qry.name \
+  -e dns.qry.type
+
+11.3 Extract HTTP request details
+
+tshark -r network-capture.pcapng -Y "http.request" \
+  -T fields \
+  -e frame.time \
+  -e ip.src \
+  -e ip.dst \
+  -e http.request.method \
+  -e http.host \
+  -e http.request.uri
+
+Field availability depends on the protocols decoded in the capture.
+
+11.4 List TCP conversations
+
+tshark -r network-capture.pcapng -q -z conv,tcp
+
+List UDP conversations:
+
+tshark -r network-capture.pcapng -q -z conv,udp
+
+Display protocol hierarchy statistics:
+
+tshark -r network-capture.pcapng -q -z io,phs
+
+11.5 Inspect available fields
+
+Search for fields related to TCP:
+
+tshark -G fields | grep -i tcp
+
+Search for DNS fields:
+
+tshark -G fields | grep -i dns
+
+Search for TLS fields:
+
+tshark -G fields | grep -i tls
+
+This is useful when a filter fails because a field name differs from what you expected.
+
+---
+
+12. Investigating Suspicious Traffic
+
+Wireshark can help investigate unusual patterns, but no single filter proves that an attack has occurred.
+
+12.1 Possible port-scanning activity
+
+Look for repeated initial SYN packets:
+
+tcp.flags.syn == 1 && tcp.flags.ack == 0
+
+Then examine the source address, destination ports, time range, and whether connections completed.
+
+A high number of SYN packets may indicate scanning, but normal applications can also initiate many connections.
+
+12.2 Repeated TCP failures
+
+tcp.flags.reset == 1 || tcp.analysis.retransmission
+
+Investigate the associated conversations and determine whether the behavior is caused by network problems, service configuration, or suspicious activity.
+
+12.3 Unusual DNS activity
+
+dns.flags.response == 0
+
+Investigate repeated queries, unexpected domains, and unusual query patterns. Compare results against the host's expected behavior.
+
+12.4 Cleartext HTTP
+
+http
+
+Inspect whether sensitive information is being sent without encryption. Do not copy real credentials or tokens into reports.
+
+12.5 Unusual outbound connections
+
+tcp.flags.syn == 1 && tcp.flags.ack == 0
+Combine this with endpoint and conversation statistics to investigate new outbound connections. You will need environmental context to decide whether a destination is unusual.
+
+12.6 Large packet bursts
+
+frame.len > 1400
+
+Use I/O Graphs and conversation statistics to investigate traffic volume. Large frames alone do not demonstrate data exfiltration or an attack.
+
+---
+
+13. Advanced Wireshark Settings
+
+13.1 Enable name resolution carefully
+
+Open:
+
+View → Name Resolution
+
+Depending on the version, you can enable or disable network-name resolution and other name-resolution options.
+
+Name resolution can make captures easier to read, but it may generate DNS lookups and can obscure the original numeric addresses. For forensic work, preserve the raw IP addresses and document any resolution settings.
+
+13.2 Configure coloring rules
+
+Open:
+
+View → Coloring Rules
+
+Coloring rules help visually distinguish packet types and conditions. Built-in rules often highlight retransmissions, resets, and other TCP events.
+
+For a custom rule:
+
+1. Open Coloring Rules.
+2. Add a new rule.
+3. Enter a descriptive name.
+4. Set the display filter.
+5. Choose foreground and background colors.
+6. Save the rule.
+
+Example filter for TCP resets:
+
+tcp.flags.reset == 1
+
+13.3 Customize columns
+
+To add useful fields to the Packet List:
+
+1. Select a packet.
+2. Expand the desired field in Packet Details.
+3. Right-click the field.
+4. Choose Apply as Column, if available.
+
+Useful columns include:
+
+- Source and destination IP
+- Source and destination port
+- TCP stream index
+- TCP flags
+- TCP sequence number
+- DNS query name
+- HTTP request method
+- HTTP host
+- HTTP response code
+
+Custom columns make large captures easier to investigate.
+
+13.4 Configure TCP analysis preferences
+
+Open:
+
+Edit → Preferences → Protocols → TCP
+
+Review options related to TCP analysis, reassembly, and sequence-number handling. Available settings depend on your Wireshark version.
+
+Do not disable reassembly merely to make a capture look simpler: it may prevent higher-level protocols from being decoded correctly.
+
+13.5 Set the time display format
+
+Open:
+
+View → Time Display Format
+
+Choose a format suitable for your investigation, such as time of day or seconds since the beginning of the capture.
+
+Relative timing is useful when analyzing delays; absolute timestamps are useful when correlating packet events with other logs. Verify the capture's timestamp accuracy and time zone before drawing conclusions.
+
+13.6 Configure protocol dissection
+
+If Wireshark decodes traffic as the wrong protocol, inspect the packet's port and protocol details. The Decode As option can help in authorized analysis where a service uses a nonstandard port.
+
+Use this carefully: forcing a protocol decoder does not prove that the traffic actually follows that protocol.
+
+13.7 Manage capture options
+
+Before starting a capture:
+
+1. Choose the correct interface.
+2. Set an appropriate capture filter if needed.
+3. Choose a manageable file size and capture duration.
+4. Consider ring-buffer options for long-running captures.
+5. Avoid capturing unrelated traffic.
+6. Confirm where the capture file will be stored.
+
+For live investigations, rotating files can help prevent a capture from consuming all available disk space.
+
+---
+
+14. Troubleshooting
+
+Wireshark cannot capture packets
+
+Check the available interfaces:
+
+tshark -D
+
+Check interface status:
+
+ip -br link
+
+Check the installed version:
+
+wireshark --version
+
+Capture permissions depend on the operating system and installation. Do not change permissions broadly or run the GUI as root by default. Use the distribution's documented capture-permission setup.
+
+The interface is missing
+
+- Verify that the interface exists.
+- Check whether the adapter or driver is working.
+- Confirm that the interface is supported by the capture backend.
+- In a virtual machine, check whether the virtual network adapter is connected.
+- For Wi-Fi monitor mode, verify adapter and driver support.
+
+Wireshark does not show HTTP content
+- Confirm whether the traffic is plain HTTP or encrypted HTTPS.
+- Check whether the capture includes the complete conversation.
+- Verify that the correct protocol is being dissected.
+- For authorized HTTPS troubleshooting, configure a supported TLS key log file if available.
+
+A display filter is rejected
+
+- Confirm the syntax and spelling.
+- Use Analyze → Display Filter Expression to find valid fields.
+- Search available fields using:
+
+tshark -G fields | grep -i 'field-name'
+
+Replace "field-name" with the term you want to search for.
+
+A TCP stream appears incomplete
+
+The capture may have started late, ended early, missed packets, or captured traffic from an unsuitable interface. Check timestamps, retransmissions, sequence numbers, and whether both directions are present.
+
+---
+
+15. Practical Investigation Workflow
+
+Use this sequence in a lab or approved investigation.
+
+Step 1: Identify interfaces
+
+ip -br addr
+tshark -D
+
+Step 2: Capture the relevant traffic
+
+sudo tshark -i eth0 -w lab-capture.pcapng
+
+Stop the capture when enough evidence has been collected.
+
+Step 3: Inspect the protocol hierarchy
+
+tshark -r lab-capture.pcapng -q -z io,phs
+
+Step 4: Identify the relevant conversations
+
+tshark -r lab-capture.pcapng -q -z conv,tcp
+
+Step 5: Investigate specific protocols
+
+DNS:
+
+dns
+
+HTTP:
+
+http
+
+TCP retransmissions:
+
+tcp.analysis.retransmission
+
+Step 6: Follow the relevant stream
+
+Select a packet, right-click, and use Follow → TCP Stream or the appropriate protocol stream option.
+
+Step 7: Export and document evidence
+
+Save a filtered capture or export selected packets if needed. Record:
+
+- Investigation objective
+- Capture source and time range
+- Tool and version
+- Filters used
+- Relevant packet numbers and stream IDs
+- Actual observed results
+- Interpretation and alternative explanations
+- Recommended next steps
+
+Documentation rule: Distinguish actual observations from example commands and hypothetical output. A filter returning packets is not, by itself, proof of malicious activity.
+
+---
+
+15. Useful References
+
+- "Wireshark User's Guide" (https://www.wireshark.org/docs/wsug_html_chunked/)
+- "Wireshark Display Filter Reference" (https://www.wireshark.org/docs/dfref/)
+- "TShark Manual" (https://www.wireshark.org/docs/man-pages/tshark.html)
+- "Wireshark Wiki" (https://wiki.wireshark.org/)
+- "TCP/IP Guide" (https://www.tcpipguide.com/)
+- "RFC Editor" (https://www.rfc-editor.org/)
+
+---
+
+This guide is intended for authorized network analysis, troubleshooting, defensive monitoring, and cybersecurity education. Always protect sensitive captures and verify findings before reporting them.
