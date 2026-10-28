@@ -1,54 +1,113 @@
-# 🐧 Linux & Parrot Security OS
+file hashes.txt
+sha256sum hashes.txt
 
-## Overview
+A file hash identifies the file's content; it does not determine which password-hashing algorithm was used inside the file.
 
-Linux is an important part of my cybersecurity learning environment. I use command-line utilities to navigate the filesystem, inspect files, investigate network configuration, and troubleshoot system issues.
+Only assess hashes for which you have explicit permission.
 
-## Commands and What They Do
+---
 
-| Command | Purpose |
-|---|---|
-| `pwd` | Display the current directory |
-| `ls -la` | List files, including hidden files |
-| `cd` | Navigate between directories |
-| `cat file.txt` | Display a text file |
-| `grep` | Search text for matching patterns |
-| `find` | Search for files and directories |
-| `chmod` | Change file permissions |
-| `tar` | Create or extract archives |
-| `ip addr` | Inspect interfaces and IP addresses |
-| `ip route` | Display routing information |
-| `ip neigh` | View the local network neighbor table |
-| `wget` | Download files from URLs |
+10. Digital Forensics & File Analysis
 
-## Example Workflow
+Identify file types and metadata
 
-```bash
-pwd
-ls -la
-ip addr
-ip route
-```
+file sample.bin
+stat sample.bin
+sha256sum sample.bin
+strings -n 8 sample.bin
 
-This sequence helps me inspect my working directory, review files, identify network interfaces, and understand routing configuration.
+ExifTool
 
-## What I Learned
+exiftool sample.jpg
 
-- Linux uses permissions to control access to files and directories.
-- Hidden files may contain important configuration information.
-- The terminal is useful for system administration and troubleshooting.
-- Network commands help identify addressing and routing issues.
-- Administrative privileges should be used carefully.
+Used to inspect metadata in supported files.
 
-## Practical Exercise Record
+Binwalk
 
-- **Environment:** Parrot Security OS
-- **Objective:** [Describe your exercise]
-- **Commands used:** [Add your actual commands]
-- **Observed output:** [Describe what appeared]
-- **Explanation:** [Explain what the output means]
-- **Lesson learned:** [Add your conclusion]
+binwalk --help
 
-## Security Note
+Useful for inspecting firmware and files that may contain embedded structures.
 
-Before publishing screenshots, remove passwords, tokens, private keys, and sensitive system information.
+ELF binary inspection
+
+readelf -h ./program
+readelf -l ./program
+readelf -d ./program
+objdump -f ./program
+
+These tools support static examination of executable formats, architecture, program headers, and dynamic dependencies.
+
+---
+
+11. Network Diagnostics — Tcpdump, Netcat & OpenSSL
+
+Tcpdump
+
+Capture authorized lab traffic:
+
+sudo tcpdump -i any -nn -c 100 -w lab.pcap
+
+Netcat
+
+Test whether a lab service is reachable:
+
+nc -vz <LAB_IP> 22
+nc -vz <LAB_IP> 443
+
+OpenSSL
+
+Inspect a TLS connection and certificate chain:
+
+openssl s_client -connect example.com:443 \
+  -servername example.com </dev/null
+
+Curl
+
+Inspect HTTP response headers:
+
+curl -sS -D - -o /dev/null https://example.com
+
+These tools help investigate connectivity, service exposure, TLS configuration, and protocol behavior.
+
+---
+
+12. Tool Verification on Parrot OS
+
+Check which tools are available in the current environment:
+
+command -v nmap
+command -v tshark
+command -v aircrack-ng
+command -v msfconsole
+command -v burpsuite
+command -v gobuster
+command -v ffuf
+command -v tcpdump
+
+A missing command may mean the tool is not installed or its executable is not on the current "PATH".
+
+For Debian-based systems, check package availability before installing:
+
+apt policy nmap tshark aircrack-ng tcpdump
+
+For third-party tools, follow their official installation documentation and verify the source.
+
+---
+
+13. Practical Learning & Evidence
+
+For every tool I study, I aim to record:
+
+- Objective: The security question being investigated.
+- Environment: The authorized lab or test system.
+- Method: The tool, relevant options, and procedure.
+- Evidence: Screenshots, logs, packet captures, or reports.
+- Analysis: What the results demonstrate.
+- Limitations: What remains uncertain or unverified.
+- Remediation: Appropriate defensive recommendations.
+
+Ethical Use
+
+All scanning, interception, wireless testing, password auditing, fuzzing, and exploitation are restricted to systems I own or have explicit authorization to assess.
+
+This file documents my technical learning journey and distinguishes tools studied from those personally tested and exercises completed successfully.
