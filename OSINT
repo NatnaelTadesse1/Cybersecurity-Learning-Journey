@@ -49,15 +49,329 @@ dig example.com NS
 
 DNS information can help explain how a domain's services are configured.
 
-## 4. Search Operators
+Google Dorking — Advanced OSINT & Web Reconnaissance
 
-Examples:
+Domain: Cybersecurity | OSINT | Web Security | Information Gathering
+Level: Intermediate to Advanced
+Environment: Web Browser | Google Search
+Focus: Search Operators, Attack Surface Discovery, Public Information Exposure, and Security Analysis
 
-```text
+---
+
+1. Introduction
+
+Google Dorking, also known as Google Hacking, is an information-gathering technique that uses advanced search operators to identify publicly indexed information with greater precision than ordinary keyword searches.
+
+Security professionals use this technique during Open-Source Intelligence (OSINT), reconnaissance, and authorized attack-surface assessments to discover exposed documents, publicly accessible resources, technology references, and potentially sensitive information.
+
+Google Dorking does not exploit a vulnerability in Google itself. Instead, it uses Google's indexing and search capabilities to locate information that may already be accessible on the web.
+
+The technique is valuable because publicly indexed information can reveal details about an organization's digital footprint, including forgotten resources, outdated documents, development artifacts, and unintentionally exposed files.
+
+Objectives
+
+- Understand advanced Google search operators.
+- Perform targeted information discovery.
+- Identify publicly indexed files and web resources.
+- Investigate exposed information using OSINT techniques.
+- Recognize potential information-disclosure risks.
+- Document findings and recommend remediation.
+
+2. How Google Dorking Works
+
+Search engines discover web content through crawling and indexing. Google processes information it can access and makes eligible indexed content searchable.
+
+Google Dorking combines search operators to narrow results according to specific conditions.
+
+For example, a normal search might return pages containing the phrase "security policy", while an advanced query can restrict results to a particular domain or file type.
+
+site:example.com filetype:pdf "security policy"
+
+This query searches for indexed PDF documents on "example.com" that match the phrase.
+
+Important distinction: Search results do not guarantee that a resource is currently accessible, sensitive, or vulnerable. Search indexes may be outdated, and access restrictions can differ from what search snippets suggest.
+
+3. Essential Google Search Operators
+
+Operator| Function| Example
+"site:"| Restricts results to a domain or website| "site:example.com"
+"filetype:"| Filters by file extension or supported document type| "filetype:pdf cybersecurity"
+"inurl:"| Searches for a term in the URL| "inurl:docs security"
+"intitle:"| Searches for a term in the page title| "intitle:"security policy""
+"intext:"| Searches for a term in the page body| "intext:"incident response""
+"exact phrase"| Searches for a specific phrase| ""access control policy""
+"-term"| Excludes results containing a term| "security -jobs"
+"OR"| Matches either of multiple alternatives| "security OR cybersecurity"
+"before:"| Restricts results to before a date| "security before:2025-01-01"
+"after:"| Restricts results to after a date| "security after:2025-01-01"
+
+Operator behavior and supported syntax can change. Validate important queries against Google's current search behavior.
+
+4. Domain-Specific Reconnaissance
+
+The "site:" operator is particularly useful for defining the scope of a search.
+
+Example 1 — Publicly Indexed Pages
+
 site:example.com
+
+Purpose: Discover pages from a particular domain that Google has indexed.
+
+Security relevance: Helps establish an initial view of an organization's publicly searchable web presence.
+
+Example 2 — Indexed PDF Documents
+
 site:example.com filetype:pdf
-"exact phrase"
-```
+
+Purpose: Identify indexed PDF documents associated with a domain.
+
+Security relevance: Documents may contain outdated contact information, internal terminology, metadata, or information that should not be publicly distributed.
+
+Example 3 — Public Office Documents
+
+site:example.com (filetype:doc OR filetype:docx OR filetype:xlsx)
+Purpose: Search for indexed Word and Excel documents.
+
+Security relevance: Supports document-exposure reviews and checks for unintended publication of business information.
+
+Use these examples with domains you own or are authorized to assess.
+
+5. URL and Page-Title Analysis
+
+URL-Based Search
+
+site:example.com inurl:docs
+
+Searches indexed URLs containing the term "docs" within the specified domain.
+
+Page-Title Search
+
+site:example.com intitle:"documentation"
+
+Searches for pages whose titles contain the specified phrase.
+
+Error and Diagnostic Information
+
+site:example.com "configuration error"
+
+Searches for pages containing a phrase that may indicate diagnostic output or configuration problems.
+
+Analysis note: An error message is not automatically a vulnerability. Confirm the context, exposure, reproducibility, and security impact before reporting a finding.
+
+6. File Exposure and Information Disclosure
+
+Publicly indexed files can unintentionally reveal organizational information.
+
+Examples of material worth reviewing during an authorized assessment include:
+
+- Outdated policy documents.
+- Publicly exposed technical documentation.
+- Development or deployment instructions.
+- Internal contact directories.
+- Old backups mistakenly published on a website.
+- Configuration examples containing sensitive-looking values.
+
+Example query:
+
+site:example.com filetype:txt "configuration"
+
+This searches indexed text files containing a configuration-related term.
+
+Another example:
+
+site:example.com filetype:pdf "internal use"
+
+This searches for indexed PDF documents containing the phrase.
+
+These queries identify candidates for review, not confirmed exposures. A document's classification, contents, access requirements, and publication authorization must be verified before assigning risk.
+
+7. Publicly Exposed Administrative Interfaces
+
+Search engines may index login pages, administration documentation, or other interface descriptions.
+
+A defensive review can search for publicly documented management interfaces on an owned domain:
+
+site:example.com intitle:"admin"
+
+The query may identify pages with "admin" in their title, but it does not establish that an administrative interface is accessible or vulnerable.
+
+During an authorized assessment, validate whether management services are intentionally public, whether authentication is enforced, and whether access controls follow organizational policy.
+
+Do not attempt to bypass authentication or access systems outside the approved scope.
+
+8. Reconnaissance Workflow
+
+A repeatable Google Dorking assessment follows a structured process.
+
+Define Authorized Domain
+          |
+          v
+Establish Search Scope
+          |
+          v
+Select Relevant Operators
+          |
+          v
+Collect Search Results
+          |
+          v
+Validate Candidate Resources
+          |
+          v
+Classify Exposure and Risk
+          |
+          v
+Document Evidence
+          |
+          v
+Recommend Remediation
+
+Step 1 — Define Scope
+
+Identify the organization, domains, subdomains, and assets explicitly included in the assessment.
+
+Step 2 — Select Operators
+
+Choose operators based on the objective, such as document discovery, URL analysis, or public documentation review.
+
+Step 3 — Review Results
+
+Record relevant URLs, titles, dates where available, and the reason each result is relevant.
+
+Step 4 — Validate Findings
+
+Determine whether the resource exists, whether it is publicly accessible, whether the information is sensitive, and whether the publication is authorized.
+
+Step 5 — Assess Risk
+
+Consider confidentiality, business impact, access controls, and whether the exposure creates a realistic security concern.
+
+Step 6 — Report
+
+Document evidence and recommend removing, restricting, correcting, or de-indexing inappropriate content as applicable.
+
+9. Google Dorking and the OSINT Process
+
+Google Dorking is one component of a broader OSINT workflow.
+OSINT activity| Purpose
+Domain research| Understand the organization's public web presence
+Search-engine reconnaissance| Locate indexed pages and documents
+Metadata review| Identify document properties and potentially revealing information
+DNS investigation| Understand domain and name-resolution records
+Certificate research| Discover publicly documented certificate and hostname information
+Technology identification| Identify publicly observable technologies and services
+Evidence correlation| Determine whether separate observations support a meaningful finding
+
+Search-engine results should be combined with other evidence where appropriate. A search result alone rarely establishes a complete security finding.
+
+10. Defensive Applications
+
+Google Dorking is useful not only for reconnaissance but also for reducing an organization's public information exposure.
+
+10.1 Document Exposure Review
+
+Organizations can periodically review their own domains for documents that should not be publicly indexed.
+
+Recommended controls:
+
+- Review publication permissions.
+- Remove sensitive content from public web directories.
+- Audit document metadata.
+- Replace exposed secrets rather than merely hiding them.
+- Restrict access to private resources.
+- Request search-index removal when appropriate.
+
+10.2 Search Index Management
+
+A "robots.txt" file provides crawling guidance to compliant crawlers. It is not an access-control mechanism and does not guarantee that a resource will remain undiscoverable.
+
+Likewise, a "noindex" directive can influence search indexing but should not be used as a substitute for authentication or authorization.
+
+Sensitive resources should be protected at the application and server layers.
+
+10.3 Secret Exposure
+
+If a publicly accessible document or repository contains a genuine credential, API key, or token:
+
+1. Treat the value as potentially compromised.
+2. Revoke or rotate it.
+3. Investigate relevant access logs.
+4. Remove the exposure at its source.
+5. Review related systems for unauthorized activity.
+6. Request removal of cached or indexed copies where appropriate.
+
+Removing a file from search results does not invalidate a leaked secret.
+
+11. Limitations and False Positives
+
+Google Dorking has several limitations:
+
+- Search results are limited to content discovered and indexed by Google.
+- Indexes can contain outdated URLs or cached descriptions.
+- Authentication-protected content may not be indexed.
+- Search operators do not consistently expose every matching resource.
+- A search result does not prove that a vulnerability exists.
+- Search snippets may omit context that changes the interpretation.
+- A public resource may be intentionally published.
+
+For these reasons, Google Dorking is best treated as a discovery technique rather than a complete vulnerability assessment.
+
+12. Finding Documentation Template
+
+For each potential exposure, record:
+
+Finding title:
+Affected domain or URL:
+Discovery method: Google Search operators
+Date observed:
+Evidence:
+Information exposed:
+Access requirements:
+Security impact:
+Severity and justification:
+Recommended remediation:
+Validation status: Confirmed / Unconfirmed / Not Applicable
+
+Do not publish confidential screenshots, private data, credentials, or sensitive organizational information in a public repository.
+
+13. Security Best Practices
+
+- Perform targeted searches only within an authorized scope.
+- Do not assume that discoverability implies permission to access or use information.
+- Avoid downloading or redistributing sensitive documents unnecessarily.
+- Do not test credentials found in exposed material.
+- Redact sensitive evidence before reporting or publication.
+- Validate the security impact before assigning severity.
+- Recommend access-control changes instead of relying only on search-index removal.
+- Record the date and exact query used to make findings reproducible.
+
+14. Technical Summary
+
+Google Dorking is a practical OSINT technique that uses advanced search operators to discover publicly indexed information efficiently.
+Its effectiveness depends on selecting appropriate queries, understanding search-engine behavior, validating results, and distinguishing ordinary public information from genuine security exposure.
+
+Key skills demonstrated:
+
+- Advanced search-operator usage.
+- Domain-scoped reconnaissance.
+- Public document discovery.
+- URL and page-title analysis.
+- Information-disclosure assessment.
+- OSINT evidence validation.
+- Exposure classification and reporting.
+
+References
+
+- Google Search Help: https://support.google.com/websearch/
+- Google Search Central: https://developers.google.com/search/docs
+- Google Advanced Search: https://www.google.com/advanced_search
+- OWASP: https://owasp.org/
+- MITRE ATT&CK: https://attack.mitre.org/
+
+---
+
+Documentation type: Technical study and authorized reconnaissance reference. Add actual observations and sanitized evidence when practical exercises have been completed.
+
 
 These operators help narrow searches to particular domains, file types, or phrases.
 
