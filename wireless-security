@@ -71,14 +71,6 @@ eapol
 - The presence of EAPOL packets does not prove that a complete, usable handshake exists.
 - A capture file and a wordlist are separate inputs in password-auditing workflows.
 
-## Practical Exercise Record
 
-- **Authorized lab:** [Add]
-- **Wireless interface:** [Add]
-- **Capture file:** [Add]
-- **Observed results:** [Add]
-- **Interpretation:** [Explain]
-- **Limitations:** [Add]
-- **Defensive lesson:** [Add]
 
 Only assess networks you own or have explicit permission to test.
