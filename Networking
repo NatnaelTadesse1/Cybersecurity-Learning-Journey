@@ -1,56 +1,701 @@
-# 🌐 Networking Fundamentals
+Advanced Networking & Cybersecurity Toolkit
 
-## Overview
+A practical reference for network reconnaissance, packet analysis, service enumeration, wireless security, web security testing, traffic monitoring, and network defense on Linux and Parrot OS.
 
-Networking knowledge helps me understand how devices communicate, how services are exposed, and how network traffic moves between systems.
+«Scope: Use these tools only on systems, wireless networks, and lab environments you own or have explicit permission to assess. Commands and outputs can vary by distribution and tool version.»
 
-## Topics Studied
+Table of Contents
 
-- IPv4 and IPv6 addressing
-- Private and public IP addresses
-- Subnet masks and subnetting
-- MAC addresses
-- TCP and UDP
-- Ports and network services
-- DNS resolution
-- Default gateways and routing
-- HTTP and HTTPS
-- SMTP and email communication
-- VPNs and tunneling
+- "1. Network Interface and Configuration" (#1-network-interface-and-configuration)
+- "2. Network Discovery and Reconnaissance" (#2-network-discovery-and-reconnaissance)
+- "3. Nmap: Advanced Port Scanning" (#3-nmap-advanced-port-scanning)
+- "4. DNS and Domain Enumeration" (#4-dns-and-domain-enumeration)
+- "5. Packet Capture and Traffic Analysis" (#5-packet-capture-and-traffic-analysis)
+- "6. Wireless Security: Aircrack-ng" (#6-wireless-security-aircrack-ng)
+- "7. Web and API Security: Burp Suite" (#7-web-and-api-security-burp-suite)
+- "8. Web Content Discovery" (#8-web-content-discovery)
+- "9. Network Connections and Troubleshooting" (#9-network-connections-and-troubleshooting)
+- "10. Network Traffic Monitoring and Defense" (#10-network-traffic-monitoring-and-defense)
+- "11. TLS and Certificate Analysis" (#11-tls-and-certificate-analysis)
+- "12. VPNs and Secure Remote Access" (#12-vpns-and-secure-remote-access)
+- "13. Network Performance Testing" (#13-network-performance-testing)
 
-## Useful Commands
+---
 
-```bash
+1. Network Interface and Configuration
+
+These tools help identify interfaces, IP addresses, routes, DNS configuration, and active network connections.
+
+"ip" — Interface and Routing Management
+
+Display network interfaces and IP addresses:
+
 ip addr
+ip -br addr
+
+Display routing information:
+
 ip route
+ip route get 1.1.1.1
+
+Display neighbor or ARP information:
+
 ip neigh
-```
 
-DNS examples:
+Why it matters: Before scanning or troubleshooting, identify the interface, local subnet, default gateway, and route used to reach the destination.
 
-```bash
-nslookup example.com
+"nmcli" — NetworkManager CLI
+
+nmcli device status
+nmcli connection show
+nmcli device show
+
+Useful for checking connection status and inspecting network configuration.
+
+"ss" — Socket Statistics
+
+Show listening TCP and UDP sockets:
+
+ss -lntup
+
+Show established TCP connections:
+
+ss -tn state established
+
+Display process information where permissions allow:
+
+sudo ss -lntup
+
+Security use: Identify unexpected listening services and investigate which processes are using network ports.
+
+"resolvectl" — DNS Configuration
+
+resolvectl status
+
+Useful for examining DNS servers and resolver configuration on systems using "systemd-resolved".
+
+---
+
+2. Network Discovery and Reconnaissance
+
+Network reconnaissance identifies hosts, exposed services, and the structure of an authorized network.
+
+"Nmap" — Network Mapper
+
+Nmap is a central tool for host discovery, port scanning, service detection, and basic OS fingerprinting.
+
+Discover live hosts on a lab subnet:
+
+nmap -sn 192.168.1.0/24
+
+Scan selected TCP ports:
+
+nmap -p 22,53,80,443,445 192.168.1.10
+
+Detect service versions:
+
+nmap -sV 192.168.1.10
+
+Run the default safe-oriented script category against a lab target:
+
+nmap -sC -sV 192.168.1.10
+
+Save results in several formats:
+
+nmap -sV -oA lab-scan 192.168.1.10
+
+The command creates output files with ".nmap", ".gnmap", and ".xml" extensions.
+
+Important: Service detection and scripts can generate traffic or interact with services. Use them only within the approved scope.
+
+"arp-scan" — Local Network Discovery
+
+sudo arp-scan --localnet
+
+Specify an interface if needed:
+
+sudo arp-scan --interface=eth0 --localnet
+
+ARP discovery is useful on local IPv4 Ethernet networks. It does not discover hosts across routers in the same way as a subnet scan.
+
+"netdiscover" — LAN Discovery
+
+sudo netdiscover
+
+For a known lab subnet:
+Use case: Quickly investigate devices visible on a local network. Interface names and available options depend on the environment.
+
+"traceroute" and "mtr" — Route Analysis
+
+traceroute example.com
+
+For a continuously updated route and latency view:
+
+mtr example.com
+
+Use case: Investigate routing paths, latency, and possible packet loss. Routers may block or deprioritize probe traffic, so missing responses do not automatically indicate a broken connection.
+
+---
+
+3. Nmap: Advanced Port Scanning
+
+Nmap provides several scanning methods. Choose the least intrusive scan that answers the question.
+
+Scan a specific port range
+
+nmap -p 1-1000 192.168.1.10
+
+Scan the most common ports
+
+nmap --top-ports 100 192.168.1.10
+
+Scan TCP ports with SYN scanning
+
+sudo nmap -sS -p 1-1000 192.168.1.10
+
+SYN scanning generally requires elevated privileges for raw packet access.
+
+Scan UDP services
+
+sudo nmap -sU -p 53,67,123,161 192.168.1.10
+
+UDP scanning can be slow and ambiguous because some services do not respond to probes.
+
+Examine a known service
+
+nmap -sV -p 22 192.168.1.10
+
+Use selected NSE scripts
+
+List scripts installed with Nmap:
+
+ls /usr/share/nmap/scripts/
+
+Search for scripts related to a service:
+
+ls /usr/share/nmap/scripts/ | grep -i http
+
+Run a specific script only after reviewing its documentation and confirming that it is appropriate for the target.
+
+Interpret common states
+
+State| Meaning
+"open"| A service is accepting connections on the port.
+"closed"| The host responded, but no service is listening there.
+"filtered"| Nmap cannot determine the state because filtering or missing responses interfere.
+open| filtered
+
+Security lesson: An open port is not proof of a vulnerability. Identify the service, verify its configuration, and investigate relevant evidence.
+
+---
+
+4. DNS and Domain Enumeration
+
+DNS reconnaissance helps identify name records, mail infrastructure, and domain configuration.
+
+"dig" — DNS Queries
+
+Query an A record:
+
 dig example.com A
+
+Query IPv6 records:
+
+dig example.com AAAA
+
+Query mail servers:
+
 dig example.com MX
+
+Query name servers:
+
 dig example.com NS
-```
 
-## Important Concepts
+Request a concise answer:
 
-**IP address:** Identifies a network interface at the IP layer.
+dig +short example.com
 
-**MAC address:** A link-layer address used for communication on a local network.
+Query a chosen resolver:
 
-**Port:** Identifies a transport-layer endpoint associated with a service or application.
+dig @1.1.1.1 example.com
 
-**DNS:** Provides records used to locate services and associate names with network information.
+"host" and "nslookup"
 
-**Routing:** Determines how packets are forwarded toward their destination.
+host example.com
+nslookup example.com
 
-## What I Learned
+These are convenient alternatives for basic DNS troubleshooting.
 
-An open port does not automatically indicate a vulnerability. Understanding the service, its configuration, its exposure, and its security controls is necessary before drawing conclusions.
+"whois" — Domain Registration Information
 
-I also learned that DNS records provide different types of information, including mail servers and authoritative nameservers.
+whois example.com
 
+Results may include registrar, registration dates, and name servers. Privacy protection and registry policies can limit the available information.
+
+"dnsrecon" — DNS Reconnaissance
+
+dnsrecon -d example.com
+
+Use only for domains within your authorized assessment scope. Avoid uncontrolled enumeration or attempts to bypass DNS security restrictions.
+
+DNS security checks
+
+Investigate SPF, DKIM, and DMARC records when assessing an authorized domain's email security:
+
+dig example.com TXT
+dig _dmarc.example.com TXT
+
+DKIM queries require the correct selector, which is normally obtained from the domain's email configuration.
+
+Security lesson: DNS records can reveal misconfigurations, but a record's presence alone does not establish that a domain is secure.
+
+---
+
+5. Packet Capture and Traffic Analysis
+
+Packet analysis is essential for understanding protocols, investigating network issues, and detecting suspicious communication.
+
+"tcpdump" — Command-Line Packet Capture
+
+List capture interfaces:
+
+sudo tcpdump -D
+
+Capture traffic on a selected interface:
+
+sudo tcpdump -i eth0
+
+Capture DNS traffic:
+
+sudo tcpdump -i eth0 'port 53'
+
+Capture traffic to or from a particular lab host:
+
+sudo tcpdump -i eth0 'host 192.168.1.10'
+
+Save packets to a capture file:
+
+sudo tcpdump -i eth0 -w lab-traffic.pcap
+
+Read a saved capture:
+
+tcpdump -r lab-traffic.pcap
+
+Show packet contents in hexadecimal and ASCII where available:
+
+sudo tcpdump -i eth0 -nn -X
+
+Important: Captures may contain credentials, tokens, private communications, or other sensitive data. Protect the files and capture only what is necessary.
+
+"Wireshark" — Graphical Protocol Analysis
+
+sudo netdiscover -r 192.168.1.0/24
+Wireshark is useful for exploring packets, following protocol conversations, and investigating unusual traffic patterns.
+
+Typical workflow:
+
+1. Select the correct capture interface.
+2. Start a capture in an authorized lab.
+3. Generate or observe the traffic you need to investigate.
+4. Apply a display filter.
+5. Inspect packet details and protocol fields.
+6. Export a minimal, sanitized capture when documentation is required.
+
+Wireshark display filters
+
+Filter| Purpose
+"dns"| DNS packets
+"http"| HTTP traffic
+"tls"| TLS protocol traffic
+"tcp.port == 443"| TCP traffic on port 443
+"ip.addr == 192.168.1.10"| Packets involving an IPv4 address
+"tcp.flags.syn == 1 && tcp.flags.ack == 0"| Initial TCP SYN packets
+"icmp"| ICMP packets
+
+Capture filters and display filters are different: capture filters determine which packets are collected; display filters determine which captured packets are shown.
+
+"TShark" — Wireshark's CLI
+
+Capture packets:
+
+sudo tshark -i eth0
+
+Read an existing capture:
+
+tshark -r lab-traffic.pcap
+
+Display DNS packets:
+
+tshark -r lab-traffic.pcap -Y dns
+
+Extract selected fields:
+
+tshark -r lab-traffic.pcap -T fields -e frame.number -e ip.src -e ip.dst -e _ws.col.Protocol
+
+Count packets by protocol:
+
+tshark -r lab-traffic.pcap -q -z io,phs
+
+Use case: Automate packet inspection and produce repeatable evidence for network investigations.
+
+---
+
+6. Wireless Security: Aircrack-ng
+
+The Aircrack-ng suite is used for wireless auditing and analysis of compatible Wi-Fi adapters.
+
+Check available wireless interfaces
+
+iw dev
+
+ip -br link
+
+Check adapter capabilities
+
+iw list
+
+Look for supported interface modes and channel capabilities. Monitor-mode support depends on the adapter, driver, and chipset.
+
+Inspect wireless networks
+
+nmcli device wifi list
+
+This uses NetworkManager and is useful for ordinary Wi-Fi discovery.
+
+Aircrack-ng suite tools
+
+Tool| Purpose
+"airmon-ng"| Helps manage monitor mode on supported adapters.
+"airodump-ng"| Captures and displays wireless network traffic.
+"aireplay-ng"| Generates selected wireless test traffic; use only in an authorized lab.
+"aircrack-ng"| Audits supported wireless authentication captures.
+
+Check the installed version:
+
+aircrack-ng --help
+
+Check interface and process information before changing wireless mode:
+
+iw dev
+sudo airmon-ng
+
+For an authorized lab capture, "airodump-ng" can save packets to a capture file. Verify the resulting file before analyzing it.
+
+Check that a capture file exists:
+
+ls -lh *.cap
+
+Inspect the file type:
+
+file scan.cap
+
+Review the tool's supported options:
+
+aircrack-ng --help
+
+Common troubleshooting points:
+
+- Confirm the capture filename and path.
+- Confirm that the capture contains relevant packets.
+- Check adapter and driver support.
+- Verify that the interface is using the expected mode.
+- Do not assume every capture contains a usable authentication exchange.
+
+Security lesson: Use wireless auditing to evaluate your own router's configuration, encryption, firmware, and password strength. Do not capture or interfere with other people's networks.
+
+---
+
+7. Web and API Security: Burp Suite
+
+Burp Suite is a web security testing platform. It is especially useful for inspecting HTTP requests and responses, testing authentication, and analyzing APIs.
+
+Core components
+
+Component| Purpose
+Proxy| Intercepts and inspects HTTP/S traffic from a configured client.
+Repeater| Re-sends manually modified requests for controlled testing.
+Intruder| Automates customized request variations within an authorized scope.
+Decoder| Encodes and decodes common data formats.
+Comparer| Compares requests, responses, and other data.
+Logger / HTTP history| Helps review recorded traffic, depending on edition and version.
+
+Recommended lab workflow
+
+1. Start Burp Suite.
+2. Use a dedicated browser profile configured for Burp's proxy.
+3. Open a deliberately vulnerable application or authorized test API.
+4. Review the request and response in Proxy history.
+5. Send an interesting request to Repeater.
+6. Change one parameter at a time.
+7. Compare status codes, headers, response bodies, and timing.
+8. Record the finding and explain its security impact.
+
+Inspect an API with "curl"
+
+Make a basic GET request:
+
+curl -i https://example.com/api/
+
+Send JSON to an authorized test endpoint:
+
+curl -i -X POST https://example.com/api/test \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"test"}'
+
+The example endpoint is illustrative; substitute an endpoint you are authorized to test.
+
+"mitmproxy" — Intercepting Proxy
+
+mitmproxy --help
+
+"mitmproxy" provides command-line and web-based options for examining HTTP traffic. Client configuration and certificate trust must be handled carefully, particularly when HTTPS is involved.
+
+Security lesson: Focus on broken access control, authentication weaknesses, input validation, insecure data exposure, and incorrect API behavior. Never test real users' accounts or data without explicit authorization.
+
+---
+
+8. Web Content Discovery
+
+These tools discover web paths and help inventory an authorized web application.
+
+"Gobuster"
+
+gobuster dir --help
+
+Example against a local lab application:
+
+gobuster dir -u http://127.0.0.1:8000 -w /usr/share/wordlists/dirb/common.txt
+
+"FFUF"
+
+ffuf -h
+
+Example for a local lab:
+
+ffuf -u http://127.0.0.1:8000/FUZZ -w /usr/share/wordlists/dirb/common.txt
+
+"WhatWeb"
+
+whatweb http://127.0.0.1:8000
+
+WhatWeb can help identify technologies exposed by a test web application.
+
+"Nikto"
+
+nikto -Help
+
+Nikto checks for various web-server issues and potentially risky configurations. It can generate numerous requests, so limit it to systems you are allowed to assess.
+
+Important: A discovered path or technology is a lead for investigation, not proof of a vulnerability.
+
+---
+
+9. Network Connections and Troubleshooting
+
+"ping" — Basic Reachability
+
+ping -c 4 192.168.1.1
+
+ICMP may be filtered, so a failed ping does not necessarily mean the host is offline.
+
+"nc" — Netcat
+
+Check whether a TCP port accepts a connection:
+
+nc -vz 192.168.1.10 22
+
+Connect to a local test service:
+
+nc 127.0.0.1 8000
+
+Netcat is useful for diagnosing connectivity and testing simple client/server behavior. Avoid exposing test listeners to untrusted networks.
+
+"socat" — Flexible Socket Relay
+
+socat -h
+
+Socat supports many address types and protocols. Because it can relay traffic between endpoints, carefully review any relay configuration before using it.
+
+"curl" — HTTP and Network Diagnostics
+
+Inspect response headers:
+
+curl -I https://example.com
+
+Show detailed connection information:
+
+curl -v https://example.com
+
+Set a timeout:
+
+curl --connect-timeout 5 --max-time 15 https://example.com
+
+"ssh" — Secure Remote Administration
+
+Connect to a host you administer:
+
+ssh user@192.168.1.10
+
+Inspect server host-key fingerprints through the appropriate trusted administrative process when verifying a new connection.
+
+Security lesson: Diagnose DNS, routing, TCP reachability, TLS, and application responses as separate layers rather than assuming every failure is a network failure.
+
+---
+
+10. Network Traffic Monitoring and Defense
+
+These tools support network security monitoring and intrusion detection.
+
+"Zeek" — Network Security Monitoring
+
+Zeek analyzes network traffic and generates structured logs for protocols and connection activity.
+
+zeek --version
+
+Review the installed documentation before processing a PCAP or live interface. Log formats depend on the configuration and Zeek version.
+
+"Suricata" — IDS/IPS and Network Analysis
+
+suricata --build-info
+
+Check configuration validity using the configuration file appropriate to your installation:
+
+sudo suricata -T -c /etc/suricata/suricata.yaml
+
+Configuration paths can differ by distribution. Suricata can inspect packet captures or monitor interfaces when configured appropriately.
+
+"Snort" — Intrusion Detection
+
+snort -V
+Snort uses rules to detect patterns associated with suspicious or prohibited traffic. Detection quality depends on rule quality, configuration, traffic visibility, and tuning.
+
+What to investigate
+
+- Unexpected outbound connections
+- Repeated failed connection attempts
+- Unusual DNS queries
+- Unexpected services exposed to a network
+- Suspicious scanning patterns
+- Connections to unapproved destinations
+- Abnormal traffic volume or protocol use
+
+Security lesson: Detection tools can produce false positives and miss activity. Validate alerts using packet captures, endpoint logs, asset inventories, and known baselines.
+
+---
+
+11. TLS and Certificate Analysis
+
+"OpenSSL"
+
+Inspect a remote TLS certificate:
+
+openssl s_client -connect example.com:443 -servername example.com
+
+Display certificate information from a local certificate file:
+
+openssl x509 -in certificate.pem -noout -subject -issuer -dates
+
+Display a certificate's SHA-256 fingerprint:
+
+openssl x509 -in certificate.pem -noout -fingerprint -sha256
+
+"testssl.sh"
+
+testssl.sh --help
+
+This tool assesses TLS configuration, protocol support, and selected cryptographic weaknesses. Scan only authorized services.
+
+"sslscan"
+
+sslscan --help
+
+"sslscan" can help enumerate supported TLS versions, ciphers, and certificate details.
+
+Security lesson: A valid certificate does not guarantee that an application is secure. Evaluate certificate validity, hostname matching, protocol support, cipher configuration, and application behavior.
+
+---
+
+12. VPNs and Secure Remote Access
+
+VPN tools are especially relevant for cybersecurity labs, remote administration, and encrypted connectivity.
+
+OpenVPN
+
+Check the installed version:
+
+openvpn --version
+
+Connect using a profile supplied by a trusted VPN provider or lab:
+
+sudo openvpn --config /path/to/profile.ovpn
+
+Check whether a tunnel interface appears:
+
+ip -br addr
+
+Inspect routing:
+
+ip route
+
+WireGuard
+
+Show interfaces:
+
+sudo wg show
+
+Bring up a configured interface:
+
+sudo wg-quick up wg0
+
+Bring it down when appropriate:
+
+sudo wg-quick down wg0
+
+The interface name and configuration path depend on your setup.
+
+VPN troubleshooting checklist
+
+1. Confirm that the tunnel is connected.
+2. Check the tunnel interface and assigned address.
+3. Inspect the route table.
+4. Verify DNS resolution.
+5. Confirm that the destination is reachable through the intended route.
+6. Check whether the lab requires access to a particular subnet.
+
+Security lesson: A connected VPN does not automatically mean all traffic passes through it. Routes and DNS settings determine how traffic is handled.
+
+---
+
+13. Network Performance Testing
+
+"iperf3" — Throughput Measurement
+
+On a test server you control:
+
+iperf3 -s
+
+From an authorized client:
+
+iperf3 -c 192.168.1.10
+
+UDP testing example:
+
+iperf3 -c 192.168.1.10 -u -b 10M -t 10
+
+UDP tests generate traffic at the configured rate and should be restricted to a suitable lab or test network.
+
+"mtr" — Latency and Route Diagnostics
+
+mtr -rw example.com
+
+This can provide a report of route and latency observations. Intermediate-hop loss may reflect router response policies rather than actual end-to-end packet loss.
+
+Useful performance measurements
+
+- Round-trip latency
+- Packet loss
+- TCP throughput
+- UDP loss and jitter
+- DNS lookup time
+- Connection establishment time
 
