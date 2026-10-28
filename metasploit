@@ -1,4 +1,4 @@
-## 14. Advanced Payload Generation with MSFVenom
+## Advanced Payload Generation with MSFVenom
 
 ### Overview
 
@@ -6,7 +6,7 @@
 
 Payload generation involves selecting a payload, configuring its options, and choosing an output format appropriate for the target platform.
 
-### 14.1 Understanding the Command Structure
+### 1, Understanding the Command Structure
 
 The following is the Windows command pattern used in Metasploit documentation:
 
@@ -30,7 +30,7 @@ This is a documentation example for an isolated, authorized lab. The placeholder
 
 **Important:** A reverse-TCP payload initiates an outbound connection to a configured listener. Creating the file does not establish a session by itself. Network reachability, compatible handler configuration, and execution in the target environment all affect the outcome.
 
-### 14.2 Understanding LHOST on Parrot OS
+### 2, Understanding LHOST on Parrot OS
 
 An interface name such as `wlp58s0` is not an IP address. To inspect the address assigned to that wireless interface, use:
 
@@ -58,7 +58,7 @@ ip route get <LAB_TARGET_IP>
 
 Use the appropriate address for the isolated lab network. A VPN or virtual-machine interface may be the correct choice instead of Wi-Fi, depending on where the target is running.
 
-### 14.3 Linux Payload Formats
+### 3, Linux Payload Formats
 
 Linux payloads use different module names and output formats from Windows payloads.
 
@@ -92,7 +92,7 @@ uname -m
 
 **Note:** The architecture of Parrot OS does not necessarily match the architecture of a separate lab target.
 
-### 14.4 Linux Executable Format
+### 4, Linux Executable Format
 
 ELF stands for *Executable and Linkable Format*. It is a common executable and object-file format on Linux and other Unix-like systems.
 
@@ -115,7 +115,7 @@ file linux-lab.elf
 
 These commands inspect existing files; the example filenames must correspond to files actually present on your system.
 
-### 14.5 Verify and Document a Lab Artifact
+### 5, Verify and Document a Lab Artifact
 
 For an artifact created during an authorized lab, document its file type and hash:
 
@@ -127,7 +127,7 @@ ls -lh <LAB_ARTIFACT>
 
 Record the actual output in the lab report. A hash helps track file integrity, while the `file` command helps identify its format.
 
-### 14.6 Defensive Security Considerations
+### 6, Defensive Security Considerations
 
 Executable payloads can create unauthorized remote access if misused. During authorized training, focus on:
 
